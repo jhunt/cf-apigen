@@ -4,4 +4,4 @@ build:
 	go build .
 
 clean:
-	rm vault-api-gen
+	rm cf-apigen

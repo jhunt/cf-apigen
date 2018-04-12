@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/starkandwayne/safe/vault"
@@ -35,11 +36,17 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 	err := VaultServer.Write(tokenPath, newSecret)
 	if err != nil {
 		log.Printf("Error:%s\n", err.Error())
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 
 	apiToken, err := VaultServer.Read(tokenPath)
 	if err != nil {
 		log.Printf("Error:%s\n", err.Error())
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 
 	token.Token = apiToken.Get("token")
@@ -47,7 +54,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	err := ReadConfig("vault-api-gen.conf")
+	err := ReadConfig("cf-apigen.conf")
 	if err != nil {
 		log.Printf("Error:%s\n", err.Error())
 	}
@@ -57,9 +64,14 @@ func main() {
 		log.Printf("Error:%s\n", err.Error())
 	}
 
+	port := ":8000"
+	if os.Getenv("PORT") != "" {
+		port = fmt.Sprintf(":%s", os.Getenv("PORT"))
+	}
+
 	router := mux.NewRouter()
 	router.HandleFunc("/v1/token", CreateToken).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(port, router))
 }
 
 func ReadConfig(file string) error {
