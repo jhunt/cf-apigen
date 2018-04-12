@@ -9,13 +9,15 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/jhunt/vcaptive"
 	"github.com/starkandwayne/safe/vault"
 	"gopkg.in/yaml.v2"
 )
 
 var Config struct {
-	VaultURL   string `yaml:"vault_url"`
-	VaultToken string `yaml:"vault_token"`
+	VaultURL    string `yaml:"vault_url"`
+	VaultToken  string `yaml:"vault_token"`
+	VaultPrefix string `yaml:"vault_prefix"`
 }
 
 var VaultServer *vault.Vault
@@ -28,7 +30,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		Email string `json:"email"`
 	}
 	json.NewDecoder(r.Body).Decode(&email)
-	tokenPath := fmt.Sprintf("secret/tokens/%s", email.Email)
+	tokenPath := fmt.Sprintf("%s/tokens/%s", Config.VaultPrefix, email.Email)
 
 	newSecret := vault.NewSecret()
 	newSecret.Password("token", 16, "a-f0-9", false)
@@ -64,9 +66,37 @@ func main() {
 		log.Printf("Error:%s\n", err.Error())
 	}
 
+	if os.Getenv("VCAP_SERVICES") != "" {
+		services, err := vcaptive.ParseServices(os.Getenv("VCAP_SERVICES"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "VCAP_SERVICES: %s\n", err)
+			os.Exit(1)
+		}
+
+		instance, found := services.WithCredentials("vault")
+		if found {
+			url, ok := instance.GetString("vault")
+			if ok {
+				Config.VaultURL = url
+			}
+			token, ok := instance.GetString("token")
+			if ok {
+				Config.VaultToken = token
+			}
+			prefix, ok := instance.GetString("root")
+			if ok {
+				Config.VaultPrefix = prefix
+			}
+		}
+	}
+
 	port := ":8000"
 	if os.Getenv("PORT") != "" {
 		port = fmt.Sprintf(":%s", os.Getenv("PORT"))
+	}
+
+	if Config.VaultPrefix == "" {
+		Config.VaultPrefix = "secret/"
 	}
 
 	router := mux.NewRouter()
