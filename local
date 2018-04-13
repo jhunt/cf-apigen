@@ -1,0 +1,36 @@
+#!/bin/bash
+
+echo "starting local vault..."
+safe local -m &
+pid=$!
+sleep 1
+echo "(running, pid $pid)"
+echo
+echo
+
+echo "setting up environment..."
+export VAULT_URL=$(safe target --json | jq -r .url)
+export VAULT_TOKEN=$(spruce json ~/.svtoken | jq -r .token)
+export VAULT_PREFIX=secret/
+echo "  VAULT_URL:    $VAULT_URL"
+echo "  VAULT_TOKEN:  $VAULT_TOKEN"
+echo "  VAULT_PREFIX: $VAULT_PREFIX"
+echo
+echo
+
+echo "building cf-apigen..."
+go build
+echo
+echo
+
+echo "starting cf-apigen (port ${PORT:-default})..."
+./cf-apigen
+echo
+echo
+
+echo "shutting down local vault..."
+kill -INT $!
+echo
+echo
+
+echo "done"

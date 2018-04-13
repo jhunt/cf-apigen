@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>APIGEN</title>
+<style type="text/css">
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0; padding: 0; border: 0;
+  font-size: 100%; font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body { line-height: 1; }
+/****/
+body {
+  background: linear-gradient(#18f, #6bf);
+  height: 100vh; width: 100vw;
+  display: flex;
+}
+.m {
+  max-width: 60vw; min-width: 30em;
+  padding: 4em; margin: 25% auto;
+  box-sizing: border-box;
+  background-color: #fff;
+  box-shadow: 10px 10px 30px #333;
+}
+.m h1 {
+  color: #07f;
+  font: bold 72pt/72pt 'Gotham XNarrow';
+}
+.m p {
+  font: 23pt/23pt 'Gotham XNarrow';
+  margin: 1em 0;
+}
+.m p span {
+  color: #07f;
+}
+.m input {
+  width: 99%;
+  padding: 4px;
+}
+.m button {
+  float: right;
+  padding: 9px 18px;
+  border-radius: 9px;
+  margin: 9px 0;
+}
+.m input, .m button {
+  color: #fff;
+  background-color: #07f;
+  box-shadow: 5px 5px 10px #777;
+  font-size: 24pt;
+  font-family: 'Gotham XNarrow';
+  border: none;
+}
+#key {
+  font-family: monospace;
+  color: magenta;
+  font-size: 40pt;
+  text-align: center;
+}
+body.a #b,
+body.b #a { display: none; }
+</style>
+</head>
+<body class="a">
+  <div id="a" class="m">
+    <h1>APIGEN❤</h1>
+    <p>Before we can get started, we'll need to get you an API Key.  If you
+    give us your email address below, we'll email you one!</p>
+    <form>
+      <input autocomplete="off" type="text" name="email" placeholder="email@add.re.ss" />
+      <button>Gimme a Key!</button>
+    </form>
+  </div>
+  <div id="b" class="m">
+    <h1>APIGEN❤YOU</h1>
+    <p>Thanks!  We've sent you an email with your API Key.  Keep it safe.
+    In the meantime, here's your shiny new <span>APIGEN</span> key!</p>
+    <div id="key"></div>
+    <p>Need <a href="#" rel="again">another one?</a></p>
+  </div>
+  <footer>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+$(function () {
+  $('input').focus();
+  $('a[rel=again]').on('click', function (event) {
+    event.preventDefault();
+    $(document.body).removeClass('b').addClass('a');
+  });
+  $('form').on('submit', function (event) {
+    event.preventDefault();
+    if ($('input').val() == '') {
+      $('input').val('beahero@starkandwayne.com');
+      window.setTimeout(function () {
+        $('form').trigger('submit');
+      }, 1400);
+      return;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url:  '/v1/token',
+      data: JSON.stringify({ email: $('input').val() }),
+      processData: false,
+      success: function (data) {
+        console.dir(data);
+        $('#key').html(data.token);
+        $(document.body).removeClass('a').addClass('b');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
