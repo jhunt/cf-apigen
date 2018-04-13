@@ -1,8 +1,6 @@
 ---
 applications:
-  - name: cf-apigen
-    buildpack: go_buildpack
-    command: cf-apigen
+  - name: apigen
     env:
-      GOVERSION: go1.9
       GOPACKAGENAME: github.com/jhunt/cf-apigen
+      VAULT_SKIP_VERIFY: yes
